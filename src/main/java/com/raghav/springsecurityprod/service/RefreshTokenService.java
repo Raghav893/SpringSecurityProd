@@ -38,6 +38,7 @@ public class RefreshTokenService {
                 .tokenHash(hash(rawToken))
                 .expiresAt(Instant.now().plusMillis(refreshExpiryMs))
                 .build();
+        refreshTokenRepository.save(refreshToken);
         return rawToken;
     }
 
