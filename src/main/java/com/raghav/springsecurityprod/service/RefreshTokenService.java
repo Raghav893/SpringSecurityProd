@@ -87,6 +87,5 @@ public class RefreshTokenService {
             throw new IllegalStateException(e);
         }
     }
-
     public record RotationResult(String newRawToken, User user) {}
 }

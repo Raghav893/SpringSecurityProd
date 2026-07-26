@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors-> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**","/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/moderator/**").hasAnyRole("ADMIN","MODERATOR")
                         .anyRequest().authenticated()
@@ -50,9 +50,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
-
+    public AuthenticationManager authManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
     @Bean

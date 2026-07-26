@@ -101,7 +101,7 @@ public class AuthController {
     private void setRefreshCookie(HttpServletResponse response,String token){
         ResponseCookie cookie = ResponseCookie.from("refresh_token",token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("Strict")
                 .path("/api/auth")
                 .maxAge(Duration.ofMillis(refreshExpiryMs))
@@ -110,7 +110,7 @@ public class AuthController {
     }
     private void clearRefreshCookie(HttpServletResponse response){
         ResponseCookie cookie = ResponseCookie.from("refresh_token","")
-                .httpOnly(true).secure(true).sameSite("Strict").path("/api/auth").maxAge(0).build();
+                .httpOnly(true).secure(false).sameSite("Strict").path("/api/auth").maxAge(0).build();
         response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
     }
 }

@@ -22,8 +22,9 @@ public class UserService {
         }
         User user = User.builder()
                 .email(request.email())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password()))
                 .roles(Set.of(Role.ROLE_USER))
+                .enabled(true)
                 .build();
         userRepository.save(user);
         return user;
