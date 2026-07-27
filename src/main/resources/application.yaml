@@ -16,3 +16,6 @@ logging:
     org.springframework.security: DEBUG
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
+resend:
+  api-key: ${RESEND_API_KEY}
+  from-address: ${RESEND_FROM_ADDRESS}
