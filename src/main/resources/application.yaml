@@ -1,16 +1,18 @@
 jwt:
-    access-secret: "uh6c8ounwzsmCvQkVS0lN0IHbUUGuf0dkfXNBHP1Wyi"
+    access-secret: ${JWT_ACCESS_SECRET}
     access-expiry-ms: 900000            # 15 minutes
     refresh-expiry-ms: 604800000        # 7 days
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/yourdb
-    username: postgres
-    password: root
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 logging:
   level:
     org.springframework.security: DEBUG
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
