@@ -25,6 +25,7 @@ public class UserService {
                 .password(passwordEncoder.encode(request.password()))
                 .roles(Set.of(Role.ROLE_USER))
                 .enabled(true)
+                .emailVerified(false)
                 .build();
         userRepository.save(user);
         return user;

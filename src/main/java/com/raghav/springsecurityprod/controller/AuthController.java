@@ -2,10 +2,13 @@ package com.raghav.springsecurityprod.controller;
 
 import com.raghav.springsecurityprod.dto.LoginRequest;
 import com.raghav.springsecurityprod.dto.RegisterRequest;
+import com.raghav.springsecurityprod.dto.ResendVerificationRequest;
 import com.raghav.springsecurityprod.entity.RefreshToken;
 import com.raghav.springsecurityprod.entity.Role;
 import com.raghav.springsecurityprod.entity.User;
+import com.raghav.springsecurityprod.exceptions.EmailNotVerifiedException;
 import com.raghav.springsecurityprod.repo.UserRepository;
+import com.raghav.springsecurityprod.service.EmailVerificationService;
 import com.raghav.springsecurityprod.service.JwtService;
 import com.raghav.springsecurityprod.service.RefreshTokenService;
 import com.raghav.springsecurityprod.service.UserService;
@@ -22,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -31,16 +35,18 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtService jwtService;
+    private final EmailVerificationService emailVerificationService;
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
 
     @Value("${jwt.refresh-expiry-ms}")
     private long refreshExpiryMs;
 
-    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService, RefreshTokenService refreshTokenService, UserRepository userRepository) {
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService, EmailVerificationService emailVerificationService, RefreshTokenService refreshTokenService, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;
+        this.emailVerificationService = emailVerificationService;
         this.refreshTokenService = refreshTokenService;
         this.userRepository = userRepository;
     }
@@ -50,15 +56,33 @@ public class AuthController {
                                                  HttpServletResponse response) {
 
         User user = userService.register(request);
+        emailVerificationService.issueVerificationToken(user);
+
         return issueTokensAndRespond(user, response, HttpStatus.CREATED);
     }
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        emailVerificationService.verifyEmail(token);
+        return ResponseEntity.ok(Map.of("message", "Email verified successfully. You can now log in."));
+    }
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody ResendVerificationRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        emailVerificationService.resendVerification(user);
 
+        return ResponseEntity.ok(Map.of("message", "If an account exists and is unverified, a new verification email has been sent."));
+    }
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,HttpServletResponse response){
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(),request.password()));
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+        if (!user.isEmailVerified()) {
+            throw new EmailNotVerifiedException("Please verify your email before logging in");
+        }
         String accessToken = jwtService.generateAccessToken(user);
+
         String refreshToken = refreshTokenService.issueRefreshToken(user);
 
         setRefreshCookie(response, refreshToken);
