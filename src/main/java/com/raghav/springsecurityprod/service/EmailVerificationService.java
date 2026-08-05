@@ -6,6 +6,7 @@ import com.raghav.springsecurityprod.exceptions.InvalidVerificationTokenExceptio
 import com.raghav.springsecurityprod.repo.EmailVerificationTokenRepository;
 import com.raghav.springsecurityprod.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class EmailVerificationService {
     private final UserRepository userRepository;
 
 
+    @Value("${app.base-url}")
     private String baseUrl;
     private static final long EXPIRY_MS = 24 * 60 * 60 * 100;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
