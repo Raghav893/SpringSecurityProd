@@ -40,4 +40,22 @@
                 throw new RuntimeException(e);
             }
         }
+        public void sendForgotPasswordEmail(String toEmail,String ForgotPasswordLink){
+            try {
+                String htmlBody = """
+                        <p>Welcome! Please verify your email by clicking the link below:</p>
+                        <p><a href="%s">Forgot password link</a><p>
+                        <p>This link expires in 6 minutes.</p>
+                        """.formatted(ForgotPasswordLink);
+                CreateEmailOptions params = CreateEmailOptions.builder()
+                        .from(fromAddress)
+                        .to(toEmail)
+                        .subject("Forgot password auth test ")
+                        .html(htmlBody)
+                        .build();
+                CreateEmailResponse response = resend.emails().send(params);
+            } catch (ResendException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }

@@ -3,17 +3,14 @@ package com.raghav.springsecurityprod.controller;
 import com.raghav.springsecurityprod.dto.LoginRequest;
 import com.raghav.springsecurityprod.dto.RegisterRequest;
 import com.raghav.springsecurityprod.dto.ResendVerificationRequest;
-import com.raghav.springsecurityprod.entity.RefreshToken;
 import com.raghav.springsecurityprod.entity.Role;
 import com.raghav.springsecurityprod.entity.User;
 import com.raghav.springsecurityprod.exceptions.EmailNotVerifiedException;
 import com.raghav.springsecurityprod.repo.UserRepository;
-import com.raghav.springsecurityprod.service.EmailVerificationService;
-import com.raghav.springsecurityprod.service.JwtService;
-import com.raghav.springsecurityprod.service.RefreshTokenService;
-import com.raghav.springsecurityprod.service.UserService;
+import com.raghav.springsecurityprod.service.*;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -38,18 +36,11 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
-
+    private final ForgotPasswordService forgotPasswordService;
     @Value("${jwt.refresh-expiry-ms}")
     private long refreshExpiryMs;
 
-    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService, EmailVerificationService emailVerificationService, RefreshTokenService refreshTokenService, UserRepository userRepository) {
-        this.authenticationManager = authenticationManager;
-        this.userService = userService;
-        this.jwtService = jwtService;
-        this.emailVerificationService = emailVerificationService;
-        this.refreshTokenService = refreshTokenService;
-        this.userRepository = userRepository;
-    }
+
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
@@ -59,6 +50,12 @@ public class AuthController {
         emailVerificationService.issueVerificationToken(user);
 
         return issueTokensAndRespond(user, response, HttpStatus.CREATED);
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> reset(@RequestBody String email){
+        forgotPasswordService.issueVerificationToken(email);
+        return ResponseEntity.ok(Map.of("message", "Password Reset Link set to registered email"));
+
     }
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
