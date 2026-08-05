@@ -27,7 +27,7 @@ public class ForgotPasswordService {
     private final EmailService emailService;
     @Value("${app.base-url}")
     private String baseUrl;
-    private static final long  EXPIRY_MS = 6*60*100;
+    private static final long  EXPIRY_MS = 6*60*1000;
 
     @Transactional
     public void issueVerificationToken(String email){
@@ -35,16 +35,16 @@ public class ForgotPasswordService {
                 .orElseThrow(() -> new EmailNotFoundException("Email Not found"));
 
         forgotPasswordTokenRepository.invalidateAllUnusedForUser(user);
-
+        String rawToken = generateSecureRandomToken();
         ForgotPasswordToken token = ForgotPasswordToken.builder()
                 .used(false)
                 .createdAt(Instant.now())
                 .expiresAt(Instant.now().plusMillis(EXPIRY_MS))
                 .user(user)
-                .tokenHash(hash(generateSecureRandomToken()))
+                .tokenHash(hash(rawToken))
                 .build();
-        String forgotPasswordUrl = baseUrl + "/api/auth/forgot-password?token="+token;
-
+        String forgotPasswordUrl = baseUrl + "/api/auth/forgot-password?token="+rawToken;
+        forgotPasswordTokenRepository.save(token);
         emailService.sendForgotPasswordEmail(user.getEmail(),forgotPasswordUrl);
     }
     private String generateSecureRandomToken(){

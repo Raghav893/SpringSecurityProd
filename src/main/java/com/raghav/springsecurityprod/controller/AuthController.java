@@ -52,7 +52,8 @@ public class AuthController {
         return issueTokensAndRespond(user, response, HttpStatus.CREATED);
     }
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> reset(@RequestBody String email){
+    public ResponseEntity<?> reset(@RequestBody ForgotPasswordRequest request){
+        String email = request.email();
         forgotPasswordService.issueVerificationToken(email);
         return ResponseEntity.ok(Map.of("message", "Password Reset Link set to registered email"));
 
@@ -135,4 +136,5 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
     }
 }
+     record ForgotPasswordRequest(String email) {}
     record AuthResponse(String accessToken, String email, Set<Role> roles) {};
