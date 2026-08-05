@@ -23,7 +23,7 @@ public class EmailService {
         try {
             String htmlBody = """
                     <p>Welcome! Please verify your email by clicking the link below:</p>
-                    <p><a href="%s">Verify Email</a></p>
+                    <button><a href="%s">Verify Email</a><button>
                     <p>This link expires in 24 hours.</p>
                     """.formatted(verificationLink);
             CreateEmailOptions params = CreateEmailOptions.builder()
