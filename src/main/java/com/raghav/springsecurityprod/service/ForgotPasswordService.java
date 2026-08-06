@@ -32,6 +32,9 @@ public class ForgotPasswordService {
     private final RefreshTokenService refreshTokenService;
     @Value("${app.base-url}")
     private String baseUrl;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
     private static final long  EXPIRY_MS = 6*60*1000;
 
     @Transactional
@@ -48,7 +51,7 @@ public class ForgotPasswordService {
                 .user(user)
                 .tokenHash(hash(rawToken))
                 .build();
-        String forgotPasswordUrl = baseUrl + "/api/auth/forgot-password?token="+rawToken;
+        String forgotPasswordUrl = frontendUrl + "/reset-password?token="+rawToken;
         forgotPasswordTokenRepository.save(token);
         emailService.sendForgotPasswordEmail(user.getEmail(),forgotPasswordUrl);
     }
