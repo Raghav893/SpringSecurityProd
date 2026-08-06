@@ -51,13 +51,7 @@ public class AuthController {
 
         return issueTokensAndRespond(user, response, HttpStatus.CREATED);
     }
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> reset(@RequestBody ForgotPasswordRequest request){
-        String email = request.email();
-        forgotPasswordService.issueVerificationToken(email);
-        return ResponseEntity.ok(Map.of("message", "Password Reset Link set to registered email"));
 
-    }
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
         emailVerificationService.verifyEmail(token);
