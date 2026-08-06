@@ -1,16 +1,19 @@
 package com.raghav.springsecurityprod.service;
 
+import com.raghav.springsecurityprod.dto.NewPasswordDetailsDto;
 import com.raghav.springsecurityprod.entity.ForgotPasswordToken;
 import com.raghav.springsecurityprod.entity.User;
 import com.raghav.springsecurityprod.exceptions.EmailNotFoundException;
+import com.raghav.springsecurityprod.exceptions.InvalidTokenException;
+import com.raghav.springsecurityprod.exceptions.TokenUsedException;
 import com.raghav.springsecurityprod.repo.ForgotPasswordTokenRepository;
 import com.raghav.springsecurityprod.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -23,8 +26,10 @@ public class ForgotPasswordService {
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
     private final UserRepository userRepository;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private final PasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
     @Value("${app.base-url}")
     private String baseUrl;
     private static final long  EXPIRY_MS = 6*60*1000;
@@ -46,6 +51,25 @@ public class ForgotPasswordService {
         String forgotPasswordUrl = baseUrl + "/api/auth/forgot-password?token="+rawToken;
         forgotPasswordTokenRepository.save(token);
         emailService.sendForgotPasswordEmail(user.getEmail(),forgotPasswordUrl);
+    }
+    @Transactional
+    public void verifyAndUpdatePassword(NewPasswordDetailsDto dto){
+        String rawToken = dto.getRawToken();
+        String NewPassword = passwordEncoder.encode(dto.getPassword());
+        ForgotPasswordToken token = forgotPasswordTokenRepository.findByTokenHash(hash(rawToken))
+                .orElseThrow(()->new InvalidTokenException("Invalid Token"));
+        if (token.isUsed()){
+            throw new TokenUsedException("Token already used");
+        }
+        if (token.getExpiresAt().isBefore(Instant.now())){
+            throw new InvalidTokenException("Token is expired");
+        }
+        User user = token.getUser();
+        user.setPassword(NewPassword);
+        token.setUsed(true);
+        refreshTokenService.revokeAllforUser(user);
+        userRepository.save(user);
+        forgotPasswordTokenRepository.save(token);
     }
     private String generateSecureRandomToken(){
         byte[] bytes = new byte[32];
