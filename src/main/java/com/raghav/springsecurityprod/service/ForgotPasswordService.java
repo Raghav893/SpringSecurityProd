@@ -1,6 +1,6 @@
 package com.raghav.springsecurityprod.service;
 
-import com.raghav.springsecurityprod.dto.NewPasswordDetailsDto;
+import com.raghav.springsecurityprod.dto.NewPasswordResetDetailsDto;
 import com.raghav.springsecurityprod.entity.ForgotPasswordToken;
 import com.raghav.springsecurityprod.entity.User;
 import com.raghav.springsecurityprod.exceptions.EmailNotFoundException;
@@ -56,7 +56,7 @@ public class ForgotPasswordService {
         emailService.sendForgotPasswordEmail(user.getEmail(),forgotPasswordUrl);
     }
     @Transactional
-    public void verifyAndUpdatePassword(NewPasswordDetailsDto dto){
+    public void verifyAndUpdatePassword(NewPasswordResetDetailsDto dto){
         String rawToken = dto.getRawToken();
         String NewPassword = passwordEncoder.encode(dto.getPassword());
         ForgotPasswordToken token = forgotPasswordTokenRepository.findByTokenHash(hash(rawToken))
