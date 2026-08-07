@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class NewPasswordDetailsDto {
+public class NewPasswordResetDetailsDto {
     @NotBlank
     private String rawToken;
     @NotBlank
