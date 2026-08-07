@@ -1,6 +1,7 @@
 package com.raghav.springsecurityprod.controller;
 
 import com.raghav.springsecurityprod.dto.LoginRequest;
+import com.raghav.springsecurityprod.dto.NewPasswordLoggedInDto;
 import com.raghav.springsecurityprod.dto.RegisterRequest;
 import com.raghav.springsecurityprod.dto.ResendVerificationRequest;
 import com.raghav.springsecurityprod.entity.Role;
@@ -103,6 +104,11 @@ public class AuthController {
         }
         clearRefreshCookie(response);
         return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody NewPasswordLoggedInDto dto) throws InvalidCurrentPasswordException {
+        userService.changePassword(dto);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
 

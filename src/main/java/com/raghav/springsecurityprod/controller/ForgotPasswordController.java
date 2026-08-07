@@ -1,6 +1,6 @@
 package com.raghav.springsecurityprod.controller;
 
-import com.raghav.springsecurityprod.dto.NewPasswordDetailsDto;
+import com.raghav.springsecurityprod.dto.NewPasswordResetDetailsDto;
 import com.raghav.springsecurityprod.service.ForgotPasswordService;
 import com.raghav.springsecurityprod.service.UserService;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ public class ForgotPasswordController {
 
     }
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody NewPasswordDetailsDto dto) {
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody NewPasswordResetDetailsDto dto) {
         forgotPasswordService.verifyAndUpdatePassword(dto);
         return ResponseEntity.ok().build();
     }}
