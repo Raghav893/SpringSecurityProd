@@ -51,7 +51,7 @@ public class ForgotPasswordService {
                 .user(user)
                 .tokenHash(hash(rawToken))
                 .build();
-        String forgotPasswordUrl = frontendUrl + "/reset-password?token="+rawToken;
+        String forgotPasswordUrl = frontendUrl + "/reset-password.html?token="+rawToken;
         forgotPasswordTokenRepository.save(token);
         emailService.sendForgotPasswordEmail(user.getEmail(),forgotPasswordUrl);
     }
