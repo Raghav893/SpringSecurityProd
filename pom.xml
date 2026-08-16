@@ -31,6 +31,16 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-jedis</artifactId>
+            <version>8.15.0</version>
+        </dependency>
+        <!-- Jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.resend</groupId>
             <artifactId>resend-java</artifactId>
             <version>4.13.0</version>
