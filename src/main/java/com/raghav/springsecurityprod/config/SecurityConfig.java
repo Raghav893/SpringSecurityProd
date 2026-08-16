@@ -1,6 +1,7 @@
 package com.raghav.springsecurityprod.config;
 
 import com.raghav.springsecurityprod.filter.JwtAuthFilter;
+import com.raghav.springsecurityprod.filter.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http){
@@ -41,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/moderator/**").hasAnyRole("ADMIN","MODERATOR")
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(rateLimitFilter, JwtAuthFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 
