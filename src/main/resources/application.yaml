@@ -2,7 +2,10 @@ jwt:
     access-secret: ${JWT_ACCESS_SECRET}
     access-expiry-ms: 900000            # 15 minutes
     refresh-expiry-ms: 604800000        # 7 days
-
+server:
+  forward-headers-strategy: framework
+cookie:
+  secure: true
 spring:
   datasource:
     url: ${DB_URL}

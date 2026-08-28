@@ -1,6 +1,7 @@
 package com.raghav.springsecurityprod.config;
 
 import com.raghav.springsecurityprod.filter.JwtAuthFilter;
+import com.raghav.springsecurityprod.filter.NoCacheHeaderFilter;
 import com.raghav.springsecurityprod.filter.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +12,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -32,7 +35,7 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, NoCacheHeaderFilter noCacheHeaderFilter){
         return  http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -43,6 +46,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/moderator/**").hasAnyRole("ADMIN","MODERATOR")
                         .anyRequest().authenticated()
                 )
+                .headers(headers->headers
+                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                        .contentTypeOptions(contentTypeOptions -> {})
+                        .referrerPolicy(referrerPolicyConfig -> referrerPolicyConfig
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        )
+                .addFilterBefore(noCacheHeaderFilter,UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
